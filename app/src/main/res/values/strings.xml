@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Lama Sign</string>
+    <string name="camera_error">This device does not support Camera2 API.</string>
+    <string name="gpu_error">GPU does not yet supported quantized models.</string>
+
+    <string name="model">Model:</string>
+    <string name="device">Device:</string>
+
+    <string name="ok">OK</string>
+
+</resources>

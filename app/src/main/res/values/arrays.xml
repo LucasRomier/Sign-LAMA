@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="models" translatable="false">
+        <item>Quantized Efficient Net</item>
+        <item>Float Efficient Net</item>
+        <item>Quantized Mobile Net</item>
+        <item>Float Mobile Net</item>
+    </string-array>
+
+    <string-array name="devices" translatable="false">
+        <item>CPU</item>
+        <item>GPU</item>
+        <item>NN API</item>
+    </string-array>
+
+</resources>
