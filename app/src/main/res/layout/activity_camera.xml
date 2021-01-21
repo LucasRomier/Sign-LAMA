@@ -25,28 +25,12 @@
         android:background="#00000000"
         android:orientation="vertical">
 
-
         <FrameLayout
                 android:id="@+id/container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@android:color/black"
-                tools:context="org.tensorflow.lite.examples.classification.CameraActivity" />
-
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:layout_alignParentTop="true"
-            android:background="@color/tfe_semi_transparent">
-
-            <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/tfl2_logo"
-                    android:contentDescription="@string/app_name"/>
-        </androidx.appcompat.widget.Toolbar>
+                tools:context="com.LucasRomier.LamaSign.Activities.CameraActivity" />
 
     </RelativeLayout>
 

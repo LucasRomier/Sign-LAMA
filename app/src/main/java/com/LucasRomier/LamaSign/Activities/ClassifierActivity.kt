@@ -83,6 +83,8 @@ class ClassifierActivity : CameraActivity(), OnImageAvailableListener {
                     showRotationInfo(sensorOrientation.toString())
                     showInference(lastProcessingTimeMs.toString() + "ms")
                 }
+
+                requestRender(results)
             }
             readyForNextImage()
         }

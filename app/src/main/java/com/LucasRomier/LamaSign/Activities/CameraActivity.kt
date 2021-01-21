@@ -3,7 +3,6 @@
 package com.LucasRomier.LamaSign.Activities
 
 import android.Manifest
-import androidx.fragment.app.Fragment
 import android.content.pm.PackageManager
 import android.hardware.Camera
 import android.hardware.Camera.PreviewCallback
@@ -25,6 +24,7 @@ import android.widget.*
 import android.widget.AdapterView.OnItemSelectedListener
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.LucasRomier.LamaSign.Classification.Device
 import com.LucasRomier.LamaSign.Classification.Model
 import com.LucasRomier.LamaSign.Classification.Recognition
@@ -32,7 +32,10 @@ import com.LucasRomier.LamaSign.Fragments.CameraConnectionFragment
 import com.LucasRomier.LamaSign.Fragments.LegacyCameraConnectionFragment
 import com.LucasRomier.LamaSign.R
 import com.LucasRomier.LamaSign.Util.ImageUtils
+import com.LucasRomier.LamaSign.Views.OverlayView
+import com.LucasRomier.LamaSign.Views.OverlayView.DrawCallback
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+
 
 abstract class CameraActivity : AppCompatActivity(), OnImageAvailableListener, PreviewCallback, View.OnClickListener, OnItemSelectedListener {
 
@@ -264,6 +267,7 @@ abstract class CameraActivity : AppCompatActivity(), OnImageAvailableListener, P
             Trace.endSection()
             return
         }
+
         Trace.endSection()
     }
 
@@ -452,6 +456,18 @@ abstract class CameraActivity : AppCompatActivity(), OnImageAvailableListener, P
             Surface.ROTATION_90 -> 90
             else -> 0
         }
+    }
+
+    open fun requestRender(results: List<Recognition?>) {
+        val overlay = findViewById<View>(R.id.overlay) as OverlayView
+
+        overlay.setResults(results)
+        overlay.postInvalidate()
+    }
+
+    open fun addCallback(callback: DrawCallback?) {
+        val overlay = findViewById<View>(R.id.overlay) as OverlayView
+        overlay.addCallback(callback!!)
     }
 
     @UiThread

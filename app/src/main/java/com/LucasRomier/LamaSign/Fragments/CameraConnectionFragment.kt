@@ -33,6 +33,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.LucasRomier.LamaSign.R
 import com.LucasRomier.LamaSign.Views.AutoFitTextureView
+import com.LucasRomier.LamaSign.Views.OverlayView
 import java.util.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
@@ -146,6 +147,9 @@ class CameraConnectionFragment(
     /** An [AutoFitTextureView] for camera preview.  */
     private var textureView: AutoFitTextureView? = null
 
+    /** An [OverlayView] for bounding boxes preview.  */
+    private var overlayView: OverlayView? = null
+
     /** A [CameraCaptureSession] for camera preview.  */
     private var captureSession: CameraCaptureSession? = null
 
@@ -238,6 +242,7 @@ class CameraConnectionFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         textureView = view.findViewById<View>(R.id.texture) as AutoFitTextureView
+        overlayView = view.findViewById<View>(R.id.overlay) as OverlayView
     }
 
     override fun onResume() {

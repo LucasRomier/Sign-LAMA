@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment
 import com.LucasRomier.LamaSign.R
 import com.LucasRomier.LamaSign.Util.ImageUtils
 import com.LucasRomier.LamaSign.Views.AutoFitTextureView
+import com.LucasRomier.LamaSign.Views.OverlayView
 import java.io.IOException
 
 class LegacyCameraConnectionFragment(
@@ -44,6 +45,9 @@ class LegacyCameraConnectionFragment(
 
     /** An [AutoFitTextureView] for camera preview.  */
     private var textureView: AutoFitTextureView? = null
+
+    /** An [OverlayView] for bounding boxes preview.  */
+    private var overlayView: OverlayView? = null
 
     /**
      * Handles several lifecycle events on a [ ].
@@ -108,6 +112,7 @@ class LegacyCameraConnectionFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         textureView = view.findViewById<View>(R.id.texture) as AutoFitTextureView
+        overlayView = view.findViewById<View>(R.id.overlay) as OverlayView
     }
 
     override fun onResume() {

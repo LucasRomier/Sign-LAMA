@@ -22,6 +22,8 @@ android {
         }
     }
 
+    flavorDimensions "default"
+
     buildFeatures {
         viewBinding true
     }
