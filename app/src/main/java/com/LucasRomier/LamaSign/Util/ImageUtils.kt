@@ -1,4 +1,4 @@
-@file:Suppress("unused", "PackageName", "FunctionName")
+@file:Suppress("unused", "PackageName", "FunctionName", "Deprecation")
 
 package com.LucasRomier.LamaSign.Util
 

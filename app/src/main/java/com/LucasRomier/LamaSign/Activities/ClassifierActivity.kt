@@ -1,4 +1,4 @@
-@file:Suppress("unused", "PackageName", "FunctionName")
+@file:Suppress("unused", "PackageName", "FunctionName", "Deprecation")
 
 package com.LucasRomier.LamaSign.Activities
 
@@ -106,12 +106,6 @@ class ClassifierActivity : CameraActivity(), OnImageAvailableListener {
             Log.d("Classifier Activity", "Closing classifier.")
             classifier!!.close()
             classifier = null
-        }
-        if (device === Device.GPU && (model === Model.QUANTIZED_MOBILE_NET || model === Model.QUANTIZED_EFFICIENT_NET)
-        ) {
-            Log.d("Classifier Activity", "Not creating classifier: GPU doesn't support quantized models.")
-            runOnUiThread { Toast.makeText(this, R.string.gpu_error, Toast.LENGTH_LONG).show() }
-            return
         }
         classifier = try {
             Log.d("Classifier Activity", "Creating classifier (model=$model, device=$device, numThreads=$numThreads)")

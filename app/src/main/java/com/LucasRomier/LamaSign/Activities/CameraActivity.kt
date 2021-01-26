@@ -1,4 +1,4 @@
-@file:Suppress("unused", "PackageName", "DuplicatedCode")
+@file:Suppress("unused", "PackageName", "DuplicatedCode", "Deprecation")
 
 package com.LucasRomier.LamaSign.Activities
 
@@ -89,7 +89,7 @@ abstract class CameraActivity : AppCompatActivity(), OnImageAvailableListener, P
 
     private lateinit var threadsTextView: TextView
 
-    private var model: Model = Model.QUANTIZED_EFFICIENT_NET
+    private var model: Model = Model.SIGNS
     private var device: Device = Device.CPU
     private var numThreads = -1
 
