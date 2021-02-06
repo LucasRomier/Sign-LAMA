@@ -26,7 +26,7 @@ import java.util.*
  * @param model The model to use for classification.
  * @return A classifier with the desired configuration.
  * */
-class Classifier(
+class ClassifierTask(
         activity: Activity?,
         device: Device?,
         numThreads: Int,
@@ -85,11 +85,13 @@ class Classifier(
         val imageOptions = ImageProcessingOptions.builder()
                 .setOrientation(getOrientation(sensorOrientation)) // Set the ROI to the center of the image.
                 .setRoi(
-                        Rect( /*left=*/
-                                (width - cropSize) / 2,  /*top=*/
-                                (height - cropSize) / 2,  /*right=*/
-                                (width + cropSize) / 2,  /*bottom=*/
-                                (height + cropSize) / 2))
+                        Rect(
+                                (width - cropSize) / 2,
+                                (height - cropSize) / 2,
+                                (width + cropSize) / 2,
+                                (height + cropSize) / 2
+                        )
+                )
                 .build()
 
         // Runs the inference call.

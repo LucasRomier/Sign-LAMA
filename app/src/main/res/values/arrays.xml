@@ -2,7 +2,8 @@
 <resources>
 
     <string-array name="models" translatable="false">
-        <item>Signs</item>
+        <item>Default</item>
+        <item>Optimized</item>
     </string-array>
 
     <string-array name="devices" translatable="false">

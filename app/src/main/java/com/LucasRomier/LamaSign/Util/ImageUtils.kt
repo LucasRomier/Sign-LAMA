@@ -2,11 +2,18 @@
 
 package com.LucasRomier.LamaSign.Util
 
+import android.content.ContentValues
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Rect
+import android.graphics.YuvImage
 import android.os.Environment
-import android.util.Log
+import android.provider.MediaStore
+import android.widget.Toast
+import androidx.renderscript.*
 import java.io.File
 import java.io.FileOutputStream
+import java.util.*
 
 class ImageUtils {
 
@@ -15,6 +22,100 @@ class ImageUtils {
         // This value is 2 ^ 18 - 1, and is used to clamp the RGB values before their ranges
         // are normalized to eight bits.
         private const val kMaxChannelValue = 262143
+
+        fun YUV_toRGB(context: Context, yuv: ByteArray?, W: Int, H: Int): Bitmap? {
+            val rs = RenderScript.create(context)
+
+            val yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+
+            val yuvType: Type.Builder = Type.Builder(rs, Element.U8(rs)).setX(yuv!!.size)
+            val allocIn = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT)
+
+            val rgbaType: Type.Builder = Type.Builder(rs, Element.RGBA_8888(rs)).setX(W).setY(H)
+            val allocOut = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT)
+
+            allocIn.copyFrom(yuv)
+
+            yuvToRgbIntrinsic.setInput(allocIn)
+            yuvToRgbIntrinsic.forEach(allocOut)
+
+            val bmp = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888)
+            allocOut.copyTo(bmp)
+
+            allocIn.destroy()
+            allocOut.destroy()
+
+            return bmp
+        }
+
+        fun SaveBitmapRGB(context: Context, rgb: Bitmap, width: Int, height: Int, crop: Boolean) {
+            val out = PrepareSave(context)
+
+            val btm = if (crop) {
+                val cropSize = width.coerceAtMost(height)
+                val area = Rect(
+                    (width - cropSize) / 2,
+                    (height - cropSize) / 2,
+                    (width + cropSize) / 2,
+                    (height + cropSize) / 2
+                )
+
+                Bitmap.createBitmap(rgb, area.left, area.top, area.width(), area.height())
+            } else {
+                rgb
+            }
+            btm.compress(Bitmap.CompressFormat.JPEG, 100, out.first);
+
+            SaveInternal(context, out.second, out.first, crop)
+        }
+
+        fun SaveYUV(context: Context, yuv: ByteArray?, format: Int, width: Int, height: Int, crop: Boolean) {
+            val out = PrepareSave(context)
+
+            val image = YuvImage(yuv, format, width, height, null)
+
+            val area = if (!crop) {
+                Rect(0, 0, image.width, image.height)
+            } else {
+                val cropSize = image.width.coerceAtMost(image.height)
+                Rect(
+                    (image.width - cropSize) / 2,
+                    (image.height - cropSize) / 2,
+                    (image.width + cropSize) / 2,
+                    (image.height + cropSize) / 2
+                )
+            }
+
+            image.compressToJpeg(area, 100, out.first)
+
+            SaveInternal(context, out.second, out.first, crop)
+        }
+
+        private fun PrepareSave(context: Context) : Pair<FileOutputStream, File> {
+            val root = "${context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!.absolutePath}${File.separator}LAMA"
+            val path = File(root)
+            path.mkdirs()
+
+            val name = String.format("%s_%d.jpg", "Capture", System.currentTimeMillis())
+            val file = File(path, name)
+
+            return Pair(FileOutputStream(file), file)
+        }
+
+        private fun SaveInternal(context: Context, file: File, out: FileOutputStream, crop: Boolean) {
+            out.flush()
+            out.close()
+
+            val values = ContentValues()
+            values.put(MediaStore.Images.Media.TITLE, "LAMA Capture")
+            values.put(MediaStore.Images.Media.DESCRIPTION, "Capture during runtime")
+            values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+            values.put(MediaStore.Images.ImageColumns.BUCKET_ID, file.toString().toLowerCase(Locale.US).hashCode())
+            values.put(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME, file.name.toLowerCase(Locale.US))
+            values.put("_data", file.absolutePath)
+            context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+            Toast.makeText(context, "Capture saved to Gallery${if (crop) " (cropped)" else ""}", Toast.LENGTH_LONG).show()
+        }
 
         /**
          * Utility method to compute the allocated size in bytes of a YUV420SP image of the given
@@ -30,113 +131,7 @@ class ImageUtils {
             return ySize + uvSize
         }
 
-        /**
-         * Saves a Bitmap object to disk for analysis.
-         *
-         * @param bitmap The bitmap to save.
-         */
-        fun SaveBitmap(bitmap: Bitmap) {
-            SaveBitmap(bitmap, "preview.png")
-        }
 
-        /**
-         * Saves a Bitmap object to disk for analysis.
-         *
-         * @param bitmap The bitmap to save.
-         * @param filename The location to save the bitmap to.
-         */
-        private fun SaveBitmap(bitmap: Bitmap, filename: String) {
-            val root = Environment.getExternalStorageDirectory().absolutePath + File.separator + "tensorflow"
-            Log.i("Image utils", "Saving ${bitmap.width}x${bitmap.height} bitmap to $root.")
-            val myDir = File(root)
-            if (!myDir.mkdirs()) {
-                Log.i("Image utils", "Make dir failed")
-            }
-            val file = File(myDir, filename)
-            if (file.exists()) {
-                file.delete()
-            }
-            try {
-                val out = FileOutputStream(file)
-                bitmap.compress(Bitmap.CompressFormat.PNG, 99, out)
-                out.flush()
-                out.close()
-            } catch (e: Exception) {
-                Log.e("Image utils", "Exception!", e)
-            }
-        }
-
-        fun ConvertYUV420SPToARGB8888(input: ByteArray, width: Int, height: Int, output: IntArray) {
-            val frameSize = width * height
-            var j = 0
-            var yp = 0
-            while (j < height) {
-                var uvp = frameSize + (j shr 1) * width
-                var u = 0
-                var v = 0
-                var i = 0
-                while (i < width) {
-                    val y = 0xff and input[yp].toInt()
-                    if (i and 1 == 0) {
-                        v = 0xff and input[uvp++].toInt()
-                        u = 0xff and input[uvp++].toInt()
-                    }
-                    output[yp] = YUV2RGB(y, u, v)
-                    i++
-                    yp++
-                }
-                j++
-            }
-        }
-
-        private fun YUV2RGB(y: Int, u: Int, v: Int): Int {
-            // Adjust and check YUV values
-            //var yy = if (y - 16 < 0) 0 else y - 16
-            var uu = u
-            var vv = v
-            uu -= 128
-            vv -= 128
-
-            // This is the floating point equivalent. We do the conversion in integer
-            // because some Android devices do not have floating point in hardware.
-            // nR = (int)(1.164 * nY + 2.018 * nU);
-            // nG = (int)(1.164 * nY - 0.813 * nV - 0.391 * nU);
-            // nB = (int)(1.164 * nY + 1.596 * nV);
-            val y1192 = 1192 * y
-            var r = y1192 + 1634 * v
-            var g = y1192 - 833 * v - 400 * u
-            var b = y1192 + 2066 * u
-
-            // Clipping RGB values to be inside boundaries [ 0 , kMaxChannelValue ]
-            r = if (r > kMaxChannelValue) kMaxChannelValue else if (r < 0) 0 else r
-            g = if (g > kMaxChannelValue) kMaxChannelValue else if (g < 0) 0 else g
-            b = if (b > kMaxChannelValue) kMaxChannelValue else if (b < 0) 0 else b
-            return -0x1000000 or (r shl 6 and 0xff0000) or (g shr 2 and 0xff00) or (b shr 10 and 0xff)
-        }
-
-        fun ConvertYUV420ToARGB8888(
-            yData: ByteArray,
-            uData: ByteArray,
-            vData: ByteArray,
-            width: Int,
-            height: Int,
-            yRowStride: Int,
-            uvRowStride: Int,
-            uvPixelStride: Int,
-            out: IntArray
-        ) {
-            var yp = 0
-            for (j in 0 until height) {
-                val pY = yRowStride * j
-                val pUV = uvRowStride * (j shr 1)
-                for (i in 0 until width) {
-                    val uvOffset = pUV + (i shr 1) * uvPixelStride
-                    out[yp++] = YUV2RGB(
-                        0xff and yData[pY + i].toInt(), 0xff and uData[uvOffset].toInt(), 0xff and vData[uvOffset].toInt()
-                    )
-                }
-            }
-        }
     }
 
 }

@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/color_primary</item>
         <item name="colorPrimaryDark">@color/color_primary_dark</item>
@@ -10,6 +10,8 @@
         <!-- No status bar -->
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
+
+        <item name="colorButtonNormal">@color/color_primary_dark</item>
     </style>
 
 </resources>
